@@ -135,14 +135,100 @@ docker run --entrypint super-sleep ubuntu-sleeper 10 - заменим коман
 **Docker Compose**
 
 Пример
-1. voting.app
-2. in-memory DB
-3. 
+1. voting.app - python
+2. in-memory DB - redis
+3. worker - NET
+4. db - postgresql
+5. result-app - nodd
+```
+docker run -d --name=redis redis
+docker run -d --name=db postgres:9.4
+docker run -d --name=vote -p 5000:80 --link redis:redis voting-app
+docker run -d --name=result -p 5001:80 --link db:db result-app
+docker run -d --name=worker --link db:db --link redis:redis worker
+```
+--link - вносит запись в /etc/hosts - ip хост - устаревшая конструкция - надо использовать netwoks
+```docker-compose.yml
+redis:
+  image: redis
+db:
+  image: postgres:9.4
+vote:
+  image: dockersamples/voting-app # - если репозитория нет то - buld: ./vote
+  ports:
+    - 5000:80
+  links:
+    - redis #(=redis:redis)
+result:
+  image: dockersamples/result-app  # -  buld: ./result (папка с dockerfile и зависимостями)
+  ports:
+    - 5001:80
+  links:
+    - db #(=db:db)
+worker:
+  image: dockersamples/worker  # -  buld: ./worker
+  links:
+    - db
+    - redis
+```
+docker-compose up
 
+**version 1** - много ограничений (например нельзя развернуть в разных сетях кроме мостовой, нельзя указать зависимости - например поднять redis посде db)
 
-
-
-
-
-
-
+**version 2** - links не нужен - все что в одном services будет объединено в сеть, появился depends_on
+**version 3** - схожа с ver 2, отличие появления оркестрации - docker swarm и работы нескольких хостов
+```
+version 2 (3)
+services:
+  redis:
+    image: redis
+  db:
+    image: postgres:9.4
+  vote:
+    image: dockersamples/voting-app
+    ports:
+      - 5000:80
+    depends_on:
+      - redis
+```
+Разделяем сети
+```
+version 2 (3)
+services:
+  redis:
+    image: redis
+    networks:
+      - backend
+  db:
+    image: postgres:9.4
+    networks:
+      - backend
+  vote:
+    image: dockersamples/voting-app
+    ports:
+      - 5000:80
+    networks:
+      - frontend
+      - backend
+  result:
+    image: dockersamples/result-app
+    ports:
+      - 5001:80
+    networks:
+      - frontend
+      - backend
+  worker:
+    image: dockersamples/worker
+    networks:
+      - backend
+networks:
+  frontend:
+  backend:
+```
+```
+docker-compose up -d
+docker-compose down
+docker-compose ps
+docker-compose logs
+docker-compose up -d --scale vote=3
+```
