@@ -36,8 +36,8 @@ docker run reddis
 docker run reddis:6.0.9
 -t - terminal
 -i - interactive
-docker run -it rotorocloud/promt-docker - позволит связать консоль контейнера с нашей и ввести значение
-echo Joos | docker run -i rotorocloud/promt-docker - подставить значение  автоматом
+docker run -it rotorocloud/prompt-docker - позволит связать консоль контейнера с нашей и ввести значение
+echo Joos | docker run -i rotorocloud/prompt-docker - подставить значение  автоматом
 -p - проброс портов
 docker run -p 80:5000 rotorocloud/webapp - проброс порта
 -v - volume mapping - директория для хранения
@@ -99,8 +99,9 @@ dovker push rotorocloud/webapp:ubuntu - грузим образ в докер х
 export DOCKER_HOST= - возвращаем стандартный (локальный) докер хост
 
 **Переменные**
+
+**-e - задает переменную**
 ```
--e - задает переменную
 docker run -e ROCKET_SIZE=big rotorocloud/simple-webapp-rockets
 docker run -e ROCKET_SIZE=small rotorocloud/simple-webapp-rockets
 ```
@@ -120,7 +121,7 @@ ENTRYPOINT ["sleep"]
 ```
 docker build . -t ubuntu-sleeper2 - команда при старте **sleep**
 
-docker run ubuntu-sleeper **10** - при запуске можем только добавить в команду
+docker run ubuntu-sleeper2 **10** - при запуске можем только добавить в команду
 
 если не задать параметр то будет ошибка - missing operand
 ```
@@ -130,7 +131,7 @@ CMD sleep 10
 ```
 можно объединить и тогда ENTRYPOINT возмет значение из CMD
 
-docker run --entrypint super-sleep ubuntu-sleeper 10 - заменим команду на super-sleep 10
+docker run --entrypoint super-sleep ubuntu-sleeper 10 - заменим команду на super-sleep 10
 
 **Docker Compose**
 
@@ -176,6 +177,7 @@ docker-compose up
 **version 1** - много ограничений (например нельзя развернуть в разных сетях кроме мостовой, нельзя указать зависимости - например поднять redis посде db)
 
 **version 2** - links не нужен - все что в одном services будет объединено в сеть, появился depends_on
+
 **version 3** - схожа с ver 2, отличие появления оркестрации - docker swarm и работы нескольких хостов
 ```
 version 2 (3)
@@ -271,7 +273,7 @@ docker volume create data_volume - создаем папку в /var/lib/docker/
 без это коменды, докер создаст автоматом и подключит такую папку при следующей команде -
 docker run -v data_volume:/var/lib/mysql mysql - volume mount - монтируем том внутрь контейнера (создаем если не создан)
 docker run -v /data/mysql:/var/lib/mysql mysql - bind mount - подключаем к определенной директории
-docker run --mount type=bind,source=/data/mysql,target=/var/lib/mysql mysql mysql - новый стиль, продвигает Docker
+docker run --mount type=bind,source=./data/mysql,target=/var/lib/mysql mysql mysql - новый стиль, продвигает Docker
 ```
 **Storaga drivers** - драйвер и хранилища для обеспечения многоуровневой архитектуры - несет ответственность за выполнение всех операций - сохранение многоуровневой архитектуры, создание слоев с возможностью записи, перемещение файлов между слоями, для возможности копирования и записи и так далее.
 
@@ -302,7 +304,7 @@ docker run webapp --network=none
 ```
 docker run webapp --network=host
 ```
-- Host - прямое связывание контейнера с сетью хоста, убирает сетевую изоляцию межде хостом и контейнером - контейнер использует все сетевые ресурсы своего хоста
+- Host - прямое связывание контейнера с сетью хоста, убирает сетевую изоляцию между хостом и контейнером - контейнер использует все сетевые ресурсы своего хоста
 - Overlay - для нагрузок связанных с оркестрацией, адаптирован для работы одной сети на нескольких узлах
 - Macvlan - связана с докеризацией нагрузки с виртуальными машинами, полностью эмулирует физический хост части сети
 ```
@@ -342,7 +344,7 @@ kubectl scale --replicas=18 node - настраиваем, можем сдела
 kubectl set image deployment node --image=node:v2 - обновление
 kubectl rollout undo deployment node - откатываем обновления
 ```
-Кластер - набор сгруппированныз узлов, нод
+Кластер - набор сгруппированных узлов, нод
 
 Ноды - машина на которой установлен кубернетес
 
@@ -362,7 +364,7 @@ kubectl (kubecontrol) - используется для развертывани
 ```
 kubectl run hello-minikube - развертывание приложения в кластере
 kubectl cluster-info - информация о кластере
-kubrctl get nodes - вывод списка всез узлов в кластере
+kubrctl get nodes - вывод списка всех узлов в кластере
 ```
 
 
